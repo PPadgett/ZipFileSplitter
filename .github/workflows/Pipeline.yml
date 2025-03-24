@@ -17,7 +17,7 @@ jobs:
       - name: Install Dependencies and Verify Versions
         shell: pwsh
         run: |
-          Write-Output "Installing required PowerShell modules..."
+          Write-Output "Installing required PowerShell modules and tools..."
 
           # Check if Pester is installed, and verify its version
           $pesterModule = Get-Module -ListAvailable -Name Pester | Sort-Object Version -Descending | Select-Object -First 1
@@ -36,6 +36,17 @@ jobs:
               $pssaModule = Get-Module -ListAvailable -Name PSScriptAnalyzer | Sort-Object Version -Descending | Select-Object -First 1
           }
           Write-Output "Using PSScriptAnalyzer version $($pssaModule.Version)"
+
+          # Check if dotnet-reportgenerator-globaltool is installed
+          $rgVersion = (& reportgenerator --version 2>$null)
+          if (-not $rgVersion) {
+              Write-Output "ReportGenerator not found, installing dotnet-reportgenerator-globaltool..."
+              dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.0.0
+          } else {
+              Write-Output "Using ReportGenerator version $rgVersion"
+          }
+          # Ensure the .dotnet tools folder is in PATH
+          $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
           Write-Output "Dependencies installed."
 
       - name: PowerShell Syntax Test
@@ -70,19 +81,15 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "Running Pester tests with code coverage..."
-          # Generate coverage data and output it to coverage.xml (without -Output Detailed)
-          Invoke-Pester -Script "$PWD\Tests" -CodeCoverage "$PWD\coverage.xml"  
+          # Using legacy parameter set warning is expected if using Pester 5 in compatibility mode.
+          # Generate coverage data and output it to coverage.xml (remove -Output Detailed to avoid conflicts)
+          Invoke-Pester -Script "$PWD\Tests" -CodeCoverage "$PWD\coverage.xml"
 
       - name: Generate Code Coverage Report
         shell: pwsh
         run: |
           Write-Output "Generating HTML code coverage report..."
-          # Ensure ReportGenerator is installed
-          if (-not (Get-Command ReportGenerator -ErrorAction SilentlyContinue)) {
-            Write-Output "ReportGenerator not found, installing ReportGenerator..."
-            Install-Module -Name ReportGenerator -Force -Scope CurrentUser
-          }
-          ReportGenerator -reports:"$PWD\coverage.xml" -targetdir:"$PWD\coverage-report"
+          reportgenerator -reports:"$PWD\coverage.xml" -targetdir:"$PWD\coverage-report"
 
       - name: Upload Coverage Report Artifact
         uses: actions/upload-artifact@v4
