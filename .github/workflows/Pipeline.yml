@@ -93,7 +93,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "Generating HTML code coverage report..."
-          reportgenerator -reports:"$PWD\coverage.xml" -targetdir:"$PWD\coverage-report"
+          reportgenerator -reports:"$PWD\coverage.xml" -targetdir:"$PWD\coverage-report" -reporttypes:"HtmlInline_AzurePipelines" -title:"Code Coverage Report"
 
       - name: Upload Coverage Report Artifact
         uses: actions/upload-artifact@v4
