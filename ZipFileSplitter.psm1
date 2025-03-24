@@ -83,58 +83,34 @@ function Split-ZipFile {
 #>
 function Merge-ZipPart {
     [CmdletBinding()]
-    param(
+    param (
         [Parameter(Mandatory = $true)]
         [string]$PartsFolder,
-
-        [Parameter(Mandatory = $false)]
-        [string]$OutputZip = "merged.zip"
+        [Parameter(Mandatory = $true)]
+        [string]$OutputZip
     )
 
-    # Resolve the parts folder to an absolute path
-    $resolvedPartsFolder = (Resolve-Path -Path $PartsFolder).Path
-    Write-Output "Merging parts from folder: $resolvedPartsFolder"
-
-    # Determine if OutputZip is a directory or file path.
-    if (Test-Path $OutputZip -PathType Container) {
-        $resolvedOutputZip = Join-Path -Path (Resolve-Path -Path $OutputZip).Path -ChildPath "MergedArchive.zip"
-    }
-    else {
-        # If the given OutputZip ends with a path separator, treat it as a directory.
-        if ($OutputZip.Trim().EndsWith('\') -or $OutputZip.Trim().EndsWith('/')) {
-            $resolvedOutputZip = Join-Path -Path (Resolve-Path -Path $OutputZip).Path -ChildPath "MergedArchive.zip"
+    # Retrieve and naturally sort the .zippart files based on the numeric portion of the file name.
+    $parts = Get-ChildItem -Path $PartsFolder -Filter '*.zippart' |
+        Sort-Object {
+            if ($_ -match 'Part_(\d+)\.zippart') { [int]$matches[1] } else { 0 }
         }
-        else {
-            $resolvedOutputZip = $OutputZip
-        }
-    }
-
-    # Ensure the output directory exists.
-    $outputDir = Split-Path -Path $resolvedOutputZip -Parent
-    if (-not (Test-Path -Path $outputDir)) {
-        New-Item -ItemType Directory -Path $outputDir | Out-Null
-    }
-
-    # Retrieve all .zippart files and sort them by name to maintain order.
-    $parts = Get-ChildItem -Path $resolvedPartsFolder -Filter "*.zippart" | Sort-Object -Property Name
 
     if ($parts.Count -eq 0) {
-        Write-Error "No .zippart files found in $resolvedPartsFolder"
-        return
+        throw "No .zippart files found in $PartsFolder"
     }
 
-    # Create the output file stream for the merged ZIP using the resolved output path.
-    $outputStream = [System.IO.File]::Create($resolvedOutputZip)
-    
-    # Use ForEach-Object to process each part.
+    # Remove the output file if it already exists.
+    if (Test-Path $OutputZip) { Remove-Item $OutputZip -Force }
+
+    Write-Verbose "Merging $($parts.Count) parts into $OutputZip"
+
+    # Process each part using the pipeline and ForEach-Object to append its bytes to the output file.
     $parts | ForEach-Object {
-        Write-Output "Merging part: $($_.FullName)"
-        $inputStream = [System.IO.File]::OpenRead($_.FullName)
-        $inputStream.CopyTo($outputStream)
-        $inputStream.Close()
+        Write-Verbose "Appending part: $($_.Name)"
+        $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
+        [System.IO.File]::AppendAllBytes($OutputZip, $bytes)
     }
-    $outputStream.Close()
-    Write-Output "Merge complete. Output file: $resolvedOutputZip"
 }
 
 #endregion Function: Merge-ZipPart
