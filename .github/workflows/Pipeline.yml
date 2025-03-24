@@ -81,9 +81,13 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "Running Pester tests with code coverage..."
-          # Capture the coverage data and output it to coverage.xml in Cobertura format.
-          $coverageResult = Invoke-Pester -Script "$PWD\Tests" -CodeCoverage @("$PWD\ZipFileSplitter.psm1") -PassThru
-          $coverageResult.CodeCoverage | ConvertTo-CoverageReport -OutputFormat Cobertura -OutputFile "$PWD\coverage.xml"
+          $configuration = New-PesterConfiguration
+          $configuration.Run.Path = "$PWD\Tests"
+          $configuration.CodeCoverage.Enabled = $true
+          $configuration.CodeCoverage.OutputFormat = 'Cobertura'
+          $configuration.CodeCoverage.OutputPath = "$PWD\coverage.xml"
+          $configuration.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $configuration
 
       - name: Generate Code Coverage Report
         shell: pwsh
