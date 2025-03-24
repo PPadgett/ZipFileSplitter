@@ -90,7 +90,7 @@ function Merge-ZipPart {
         [string]$OutputZip
     )
 
-    # Retrieve and naturally sort the .zippart files based on the numeric portion of the file name.
+    # Retrieve and naturally sort the .zippart files based on the numeric portion in the filename.
     $parts = Get-ChildItem -Path $PartsFolder -Filter '*.zippart' |
         Sort-Object {
             if ($_ -match 'Part_(\d+)\.zippart') { [int]$matches[1] } else { 0 }
@@ -105,13 +105,23 @@ function Merge-ZipPart {
 
     Write-Verbose "Merging $($parts.Count) parts into $OutputZip"
 
-    # Process each part using the pipeline and ForEach-Object to append its bytes to the output file.
-    $parts | ForEach-Object {
-        Write-Verbose "Appending part: $($_.Name)"
-        $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
-        [System.IO.File]::AppendAllBytes($OutputZip, $bytes)
+    # Open a FileStream for the output file (create new or overwrite).
+    $fs = [System.IO.File]::Open($OutputZip, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write)
+
+    try {
+        # Process each part in order using the pipeline.
+        $parts | ForEach-Object {
+            Write-Verbose "Appending part: $($_.Name)"
+            $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
+            $fs.Write($bytes, 0, $bytes.Length)
+        }
+    }
+    finally {
+        # Ensure the file stream is closed even if an error occurs.
+        $fs.Close()
     }
 }
+
 
 #endregion Function: Merge-ZipPart
 

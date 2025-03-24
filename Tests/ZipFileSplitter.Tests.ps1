@@ -232,44 +232,44 @@ Describe 'ZipFileSplitter Module' {
         It 'Returns an error when no .zippart files are found' {
             $emptyFolder = Join-Path -Path $script:tempRoot -ChildPath ("EmptyParts_{0}" -f ([System.Guid]::NewGuid()))
             New-Item -ItemType Directory -Path $emptyFolder -Force | Out-Null
-            { Merge-ZipPart -PartsFolder $emptyFolder -ErrorAction Stop } | Should -Throw
-        }
+            $dummyOutput = Join-Path -Path $script:tempRoot -ChildPath 'dummy.zip'
+            { Merge-ZipPart -PartsFolder $emptyFolder -OutputZip $dummyOutput -ErrorAction Stop } | Should -Throw
+        }        
 
         It 'Merges parts in sorted order' {
             $partsFolder = Join-Path -Path $script:tempRoot -ChildPath ("UnorderedParts_{0}" -f ([System.Guid]::NewGuid()))
             New-Item -ItemType Directory -Path $partsFolder -Force | Out-Null
-
-            # Manually split the file into parts
-            $fileContent = [System.IO.File]::ReadAllBytes($script:testFilePath)
-            $chunkSize = 500
-            $partNumber = 1
-            while ($fileContent.Length -gt 0) {
-                $length = [Math]::Min($chunkSize, $fileContent.Length)
-                $chunk = $fileContent[0..($length - 1)]
-                $partPath = Join-Path -Path $partsFolder -ChildPath ("Part_{0:D3}.zippart" -f $partNumber)
-                [System.IO.File]::WriteAllBytes($partPath, $chunk)
-                $fileContent = $fileContent[$length..($fileContent.Length - 1)]
-                $partNumber++
-            }
-
-            # Shuffle the parts to simulate unordered file retrieval
-            $shuffledParts = Get-ChildItem -Path $partsFolder -Filter "*.zippart" | Get-Random -Count (Get-ChildItem -Path $partsFolder -Filter "*.zippart").Count
+        
+            # Use the Split-ZipFile cmdlet to split the file into parts.
+            Split-ZipFile -InputZip $script:testFilePath -OutputFolder $partsFolder -ChunkSize 500 | Out-Null
+        
+            # Retrieve the parts and shuffle them to simulate unordered retrieval.
+            $parts = Get-ChildItem -Path $partsFolder -Filter "*.zippart"
+            $shuffledParts = $parts | Get-Random -Count $parts.Count
+        
+            # Rename shuffled parts so that their names are temporarily altered.
             foreach ($file in $shuffledParts) {
                 Rename-Item -Path $file.FullName -NewName ("zz_{0}" -f $file.Name)
             }
+        
+            # Rename back to remove the temporary prefix.
             Get-ChildItem -Path $partsFolder -Filter "zz_*.zippart" | ForEach-Object {
                 Rename-Item -Path $_.FullName -NewName ($_.Name.Substring(3))
             }
-
+        
+            # Merge the parts.
             $mergedFile = Join-Path -Path $script:tempRoot -ChildPath 'Merged_Unordered.zip'
             Merge-ZipPart -PartsFolder $partsFolder -OutputZip $mergedFile | Out-Null
+        
+            # Validate that the merged file is identical to the original.
             $originalBytes = [System.IO.File]::ReadAllBytes($script:testFilePath)
-            $mergedBytes = [System.IO.File]::ReadAllBytes($mergedFile)
+            $mergedBytes   = [System.IO.File]::ReadAllBytes($mergedFile)
             $mergedBytes.Length | Should -Be $originalBytes.Length
+        
             for ($i = 0; $i -lt $originalBytes.Length; $i++) {
                 $mergedBytes[$i] | Should -Be $originalBytes[$i]
             }
-        }
+        }        
     }
 }
 
