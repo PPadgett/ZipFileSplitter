@@ -70,8 +70,8 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "Running Pester tests with code coverage..."
-          # Generate coverage data and output it to coverage.xml
-          Invoke-Pester -Script "$PWD\Tests" -Output Detailed -CodeCoverage "$PWD\coverage.xml"
+          # Generate coverage data and output it to coverage.xml (without -Output Detailed)
+          Invoke-Pester -Script "$PWD\Tests" -CodeCoverage "$PWD\coverage.xml"  
 
       - name: Generate Code Coverage Report
         shell: pwsh
