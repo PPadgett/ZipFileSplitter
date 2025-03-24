@@ -1,36 +1,67 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: windows-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Setup PowerShell
+        uses: actions/setup-powershell@v2
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Install Dependencies
+        shell: pwsh
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          Write-Output "Installing required PowerShell modules..."
+          # Install Pester for running tests
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+              Install-Module -Name Pester -Force -Scope CurrentUser
+          }
+          # Install PSScriptAnalyzer for linting
+          if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
+              Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          }
+          Write-Output "Dependencies installed."
+
+      - name: PowerShell Syntax Test
+        shell: pwsh
+        run: |
+          Write-Output "Performing syntax check for module files..."
+          Get-ChildItem -Path .\*.psm1 -Recurse | ForEach-Object {
+            $syntaxErrors = $null
+            $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content -Path $_.FullName -Raw), [ref]$syntaxErrors)
+            if ($syntaxErrors.Count -gt 0) {
+              $syntaxErrors | ForEach-Object { Write-Host "Syntax error in file $($_.File): Line $($_.StartLine) - $($_.Message)" }
+              throw "Syntax check failed."
+            }
+          }
+          Write-Output "Syntax check passed."
+
+      - name: Lint Testing with PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Write-Output "Running PSScriptAnalyzer linting..."
+          $results = Invoke-ScriptAnalyzer -Path "$PWD\ZipFileSplitter.psm1" -Recurse -Severity Warning, Error
+          if ($results.Count -gt 0) {
+              Write-Output "PSScriptAnalyzer found issues:"
+              $results | Format-Table -AutoSize
+              throw "Linting failed."
+          }
+          else {
+              Write-Output "No linting issues found."
+          }
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          Write-Output "Importing module and running Pester tests..."
+          Import-Module "$PWD\ZipFileSplitter.psm1"
+          Invoke-Pester -Script "$PWD\Tests" -Output Detailed
