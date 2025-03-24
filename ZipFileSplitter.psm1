@@ -63,7 +63,7 @@ function Split-ZipFile {
 }
 #endregion Function: Split-ZipFile
 
-#region Function: Merge-ZipParts
+#region Function: Merge-ZipPart
 <#
 .SYNOPSIS
     Merges split ZIP file parts into a single ZIP file.
@@ -75,9 +75,9 @@ function Split-ZipFile {
 .PARAMETER OutputZip
     The path and filename for the output ZIP file. Defaults to "merged.zip" in the current directory.
 .EXAMPLE
-    Merge-ZipParts -PartsFolder "C:\Files\Parts" -OutputZip "C:\Files\MergedArchive.zip"
+    Merge-ZipPart -PartsFolder "C:\Files\Parts" -OutputZip "C:\Files\MergedArchive.zip"
 #>
-function Merge-ZipParts {
+function Merge-ZipPart {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -110,7 +110,7 @@ function Merge-ZipParts {
     $outputStream.Close()
     Write-Output "Merge complete. Output file: $(Resolve-Path -Path $OutputZip).Path"
 }
-#endregion Function: Merge-ZipParts
+#endregion Function: Merge-ZipPart
 
 # Export the functions for module users.
-Export-ModuleMember -Function Split-ZipFile, Merge-ZipParts
+Export-ModuleMember -Function Split-ZipFile, Merge-ZipPart
