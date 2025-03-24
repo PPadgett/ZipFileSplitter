@@ -66,9 +66,26 @@ jobs:
               Write-Output "No linting issues found."
           }
 
-      - name: Run Pester Tests
+      - name: Run Pester Tests with Code Coverage
         shell: pwsh
         run: |
-          Write-Output "Importing module and running Pester tests..."
-          Import-Module "$PWD\ZipFileSplitter.psm1"
-          Invoke-Pester -Script "$PWD\Tests" -Output Detailed
+          Write-Output "Running Pester tests with code coverage..."
+          # Generate coverage data and output it to coverage.xml
+          Invoke-Pester -Script "$PWD\Tests" -Output Detailed -CodeCoverage "$PWD\coverage.xml"
+
+      - name: Generate Code Coverage Report
+        shell: pwsh
+        run: |
+          Write-Output "Generating HTML code coverage report..."
+          # Ensure ReportGenerator is installed
+          if (-not (Get-Command ReportGenerator -ErrorAction SilentlyContinue)) {
+            Write-Output "ReportGenerator not found, installing ReportGenerator..."
+            Install-Module -Name ReportGenerator -Force -Scope CurrentUser
+          }
+          ReportGenerator -reports:"$PWD\coverage.xml" -targetdir:"$PWD\coverage-report"
+
+      - name: Upload Coverage Report Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Coverage-Report
+          path: coverage-report/
