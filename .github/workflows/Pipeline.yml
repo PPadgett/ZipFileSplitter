@@ -9,7 +9,6 @@ on:
 jobs:
   build-and-test:
     runs-on: windows-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -19,7 +18,7 @@ jobs:
         run: |
           Write-Output "Installing required PowerShell modules and tools..."
 
-          # Check if Pester is installed, and verify its version
+          # Install/Update Pester if necessary
           $pesterModule = Get-Module -ListAvailable -Name Pester | Sort-Object Version -Descending | Select-Object -First 1
           if ($null -eq $pesterModule) {
               Write-Output "Pester is not installed, installing Pester..."
@@ -28,7 +27,7 @@ jobs:
           }
           Write-Output "Using Pester version $($pesterModule.Version)"
 
-          # Check if PSScriptAnalyzer is installed, and verify its version
+          # Install/Update PSScriptAnalyzer if necessary
           $pssaModule = Get-Module -ListAvailable -Name PSScriptAnalyzer | Sort-Object Version -Descending | Select-Object -First 1
           if ($null -eq $pssaModule) {
               Write-Output "PSScriptAnalyzer is not installed, installing PSScriptAnalyzer..."
@@ -37,7 +36,7 @@ jobs:
           }
           Write-Output "Using PSScriptAnalyzer version $($pssaModule.Version)"
 
-          # Check if ReportGenerator (dotnet-reportgenerator-globaltool) is installed by verifying the executable
+          # Install ReportGenerator (dotnet global tool)
           $rgExe = "$env:USERPROFILE\.dotnet\tools\reportgenerator.exe"
           if (-not (Test-Path $rgExe)) {
               Write-Output "ReportGenerator not found, installing dotnet-reportgenerator-globaltool..."
@@ -45,7 +44,7 @@ jobs:
           } else {
               Write-Output "Using ReportGenerator from $rgExe"
           }
-          # Ensure the .dotnet tools folder is in the PATH environment variable
+          # Ensure the .dotnet tools folder is in the PATH
           $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
           Write-Output "Dependencies installed."
 
@@ -100,3 +99,10 @@ jobs:
         with:
           name: Coverage-Report
           path: coverage-report/
+
+      # - name: Deploy Coverage Report to GitHub Pages
+      #   uses: JamesIves/github-pages-deploy-action@v4
+      #   with:
+      #     branch: gh-pages          # Branch to deploy to.
+      #     folder: coverage-report   # Folder to deploy.
+      #     token: ${{ secrets.GITHUB_TOKEN }}
