@@ -83,6 +83,7 @@ jobs:
           $configuration = New-PesterConfiguration
           $configuration.Run.Path = "$PWD\Tests"
           $configuration.CodeCoverage.Enabled = $true
+          $configuration.CodeCoverage.Path = "$PWD\ZipFileSplitter.psm1"
           $configuration.CodeCoverage.OutputFormat = 'Cobertura'
           $configuration.CodeCoverage.OutputPath = "$PWD\coverage.xml"
           $configuration.Output.Verbosity = 'Detailed'
