@@ -81,9 +81,9 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "Running Pester tests with code coverage..."
-          # Use legacy parameter set warning is expected in compatibility mode.
-          # Generate coverage data and output it to coverage.xml (remove -Output Detailed to avoid conflicts)
-          Invoke-Pester -Script "$PWD\Tests" -CodeCoverage "$PWD\coverage.xml"
+          # Capture the coverage data and output it to coverage.xml in Cobertura format.
+          $coverageResult = Invoke-Pester -Script "$PWD\Tests" -CodeCoverage @("$PWD\ZipFileSplitter.psm1") -PassThru
+          $coverageResult.CodeCoverage | ConvertTo-CoverageReport -OutputFormat Cobertura -OutputFile "$PWD\coverage.xml"
 
       - name: Generate Code Coverage Report
         shell: pwsh
