@@ -2,7 +2,6 @@
 ![Codecov](https://img.shields.io/codecov/c/github/PPadgett/ZipFileSplitter.svg)
 ![PowerShell](https://img.shields.io/badge/PowerShell-Module-blue)
 ![GitHub issues](https://img.shields.io/github/issues/PPadgett/ZipFileSplitter.svg)
-<img alt="gitleaks badge" src="https://img.shields.io/badge/protected%20by-gitleaks-blue">
 ![Gitleaks Badge](https://img.shields.io/badge/Protected%20by-Gitleaks-blue?style=flat)
 
 
