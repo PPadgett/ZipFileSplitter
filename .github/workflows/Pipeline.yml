@@ -101,6 +101,11 @@ jobs:
           name: Coverage-Report
           path: coverage-report/
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       # - name: Deploy Coverage Report to GitHub Pages
       #   uses: JamesIves/github-pages-deploy-action@v4
       #   with:
