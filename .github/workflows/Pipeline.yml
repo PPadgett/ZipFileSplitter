@@ -18,9 +18,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Path to your config file; optional—if not provided, gitleaks uses its defaults.
-          GITLEAKS_CONFIG: ./gitleaks.toml
+          # GITLEAKS_CONFIG: ./gitleaks.toml
           # Specify that you want the latest version; if this fails, you'll fall back.
-          GITLEAKS_VERSION: latest
+          # GITLEAKS_VERSION: latest
   
       - name: Install Dependencies and Verify Versions
         shell: pwsh
