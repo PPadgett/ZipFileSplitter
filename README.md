@@ -1,9 +1,9 @@
 ![Build Status](https://github.com/PPadgett/ZipFileSplitter/actions/workflows/Pipeline.yml/badge.svg?branch=main)
 ![Codecov](https://img.shields.io/codecov/c/github/PPadgett/ZipFileSplitter.svg)
-![PowerShell](https://img.shields.io/badge/PowerShell-Module-blue)
 ![GitHub issues](https://img.shields.io/github/issues/PPadgett/ZipFileSplitter.svg)
-![Gitleaks Badge](https://img.shields.io/badge/Protected%20by-Gitleaks-blue?style=flat)
 ![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=PPadgett_ZipFileSplitter&metric=alert_status)
+![Gitleaks Badge](https://img.shields.io/badge/Protected%20by-Gitleaks-blue?style=flat)
+![PowerShell](https://img.shields.io/badge/PowerShell-Module-blue)
 
 # ZipFileSplitter PowerShell Module
 
