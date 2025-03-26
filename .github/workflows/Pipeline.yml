@@ -15,6 +15,9 @@ jobs:
 
       - name: Run Gitleaks Secret Scan
         uses: gitleaks/gitleaks-action@v2
+        with:
+          file: gitleaks.toml
+          version: '8.16.0'  # Use a known working version if 8.16.1 returns 404
 
       - name: Install Dependencies and Verify Versions
         shell: pwsh
