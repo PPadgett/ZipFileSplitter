@@ -15,15 +15,19 @@ jobs:
 
       - name: Run Gitleaks Secret Scan
         uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Only include the license if your repo belongs to an organization
+          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
         with:
-          file: gitleaks.toml
-          version: '8.16.0'  # Use a known working version if 8.16.1 returns 404
+            file: gitleaks.toml
+            version: '8.16.0'  # Use a known working version if 8.16.1 returns 404
 
       - name: Install Dependencies and Verify Versions
         shell: pwsh
         run: |
           Write-Output "Installing required PowerShell modules and tools..."
-      
+ 
           # Install/Update Pester if necessary
           $pesterModule = Get-Module -ListAvailable -Name Pester | Sort-Object Version -Descending | Select-Object -First 1
           if ($null -eq $pesterModule) {
