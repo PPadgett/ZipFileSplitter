@@ -42,7 +42,11 @@ jobs:
           $configuration.CodeCoverage.OutputFormat = 'Cobertura'
           $configuration.CodeCoverage.OutputPath = "$PWD\coverage.xml"
           $configuration.Output.Verbosity = 'Detailed'
-          Invoke-Pester -Configuration $configuration -Output NUnitXml -OutputFile "$PWD\junit.xml"
+          # Configure NUnit XML output
+          $configuration.Output.Format = 'NUnitXml'
+          $configuration.Output.FilePath = "$PWD\junit.xml"
+          Invoke-Pester -Configuration $configuration
+
 
       - name: Generate Code Coverage Report
         shell: pwsh
