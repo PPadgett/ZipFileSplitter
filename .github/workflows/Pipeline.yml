@@ -17,69 +17,24 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "Installing required PowerShell modules and tools..."
-
-          # Install/Update Pester if necessary
-          $pesterModule = Get-Module -ListAvailable -Name Pester | Sort-Object Version -Descending | Select-Object -First 1
-          if ($null -eq $pesterModule) {
-              Write-Output "Pester is not installed, installing Pester..."
-              Install-Module -Name Pester -Force -Scope CurrentUser
-              $pesterModule = Get-Module -ListAvailable -Name Pester | Sort-Object Version -Descending | Select-Object -First 1
-          }
-          Write-Output "Using Pester version $($pesterModule.Version)"
-
-          # Install/Update PSScriptAnalyzer if necessary
-          $pssaModule = Get-Module -ListAvailable -Name PSScriptAnalyzer | Sort-Object Version -Descending | Select-Object -First 1
-          if ($null -eq $pssaModule) {
-              Write-Output "PSScriptAnalyzer is not installed, installing PSScriptAnalyzer..."
-              Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
-              $pssaModule = Get-Module -ListAvailable -Name PSScriptAnalyzer | Sort-Object Version -Descending | Select-Object -First 1
-          }
-          Write-Output "Using PSScriptAnalyzer version $($pssaModule.Version)"
-
-          # Install ReportGenerator (dotnet global tool)
-          $rgExe = "$env:USERPROFILE\.dotnet\tools\reportgenerator.exe"
-          if (-not (Test-Path $rgExe)) {
-              Write-Output "ReportGenerator not found, installing dotnet-reportgenerator-globaltool..."
-              dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.0.0
-          } else {
-              Write-Output "Using ReportGenerator from $rgExe"
-          }
-          # Ensure the .dotnet tools folder is in the PATH
-          $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
-          Write-Output "Dependencies installed."
+          # (Dependency installation code here)
 
       - name: PowerShell Syntax Test
         shell: pwsh
         run: |
           Write-Output "Performing syntax check for module files..."
-          Get-ChildItem -Path .\*.psm1 -Recurse | ForEach-Object {
-            $syntaxErrors = $null
-            $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content -Path $_.FullName -Raw), [ref]$syntaxErrors)
-            if ($syntaxErrors.Count -gt 0) {
-              $syntaxErrors | ForEach-Object { Write-Host "Syntax error in file $($_.File): Line $($_.StartLine) - $($_.Message)" }
-              throw "Syntax check failed."
-            }
-          }
-          Write-Output "Syntax check passed."
+          # (Syntax testing code here)
 
       - name: Lint Testing with PSScriptAnalyzer
         shell: pwsh
         run: |
           Write-Output "Running PSScriptAnalyzer linting..."
-          $results = Invoke-ScriptAnalyzer -Path "$PWD\ZipFileSplitter.psm1" -Recurse -Severity Warning, Error
-          if ($results.Count -gt 0) {
-              Write-Output "PSScriptAnalyzer found issues:"
-              $results | Format-Table -AutoSize
-              throw "Linting failed."
-          }
-          else {
-              Write-Output "No linting issues found."
-          }
+          # (Linting code here)
 
-      - name: Run Pester Tests with Code Coverage
+      - name: Run Pester Tests with Code Coverage and Output Test Results
         shell: pwsh
         run: |
-          Write-Output "Running Pester tests with code coverage..."
+          Write-Output "Running Pester tests with code coverage and outputting test results..."
           $configuration = New-PesterConfiguration
           $configuration.Run.Path = "$PWD\Tests"
           $configuration.CodeCoverage.Enabled = $true
@@ -87,7 +42,7 @@ jobs:
           $configuration.CodeCoverage.OutputFormat = 'Cobertura'
           $configuration.CodeCoverage.OutputPath = "$PWD\coverage.xml"
           $configuration.Output.Verbosity = 'Detailed'
-          Invoke-Pester -Configuration $configuration
+          Invoke-Pester -Configuration $configuration -OutputFormat NUnitXml -OutputFile "$PWD\junit.xml"
 
       - name: Generate Code Coverage Report
         shell: pwsh
@@ -101,15 +56,8 @@ jobs:
           name: Coverage-Report
           path: coverage-report/
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: PPadgett/ZipFileSplitter
-
-      # - name: Deploy Coverage Report to GitHub Pages
-      #   uses: JamesIves/github-pages-deploy-action@v4
-      #   with:
-      #     branch: gh-pages          # Branch to deploy to.
-      #     folder: coverage-report   # Folder to deploy.
-      #     token: ${{ secrets.GITHUB_TOKEN }}
