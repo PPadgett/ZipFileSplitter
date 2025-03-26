@@ -119,8 +119,6 @@ jobs:
               throw "Security analysis failed."
           }
 
-
-
       - name: Run Pester Tests with Code Coverage
         shell: pwsh
         run: |
@@ -139,6 +137,11 @@ jobs:
         run: |
           Write-Output "Generating HTML code coverage report..."
           reportgenerator -reports:"$PWD\coverage.xml" -targetdir:"$PWD\coverage-report" -reporttypes:"HtmlInline_AzurePipelines" -title:"Code Coverage Report"
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # - name: Upload Coverage Report Artifact
       #   uses: actions/upload-artifact@v4
