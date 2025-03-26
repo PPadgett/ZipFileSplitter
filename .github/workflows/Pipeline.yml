@@ -91,18 +91,38 @@ jobs:
         run: |
           Write-Output "Running security analysis with InjectionHunter rules..."
       
-          # Determine the path to the InjectionHunter module
-          $injectionHunterPath = (Get-Module -ListAvailable -Name InjectionHunter | Sort-Object Version -Descending | Select-Object -First 1).ModuleBase
+          # Check if InjectionHunter module is installed
+          $ihModule = Get-Module -ListAvailable -Name InjectionHunter | Sort-Object Version -Descending | Select-Object -First 1
+          if ($null -eq $ihModule) {
+              Write-Output "InjectionHunter module not found. Skipping InjectionHunter security analysis."
+              exit 0
+          }
       
-          # Run PSScriptAnalyzer with InjectionHunter's custom rules
-          $results = Invoke-ScriptAnalyzer -Path "$PWD\ZipFileSplitter.psm1" -Recurse -CustomRulePath $injectionHunterPath -Severity Warning, Error
+          # Construct the path to the InjectionHunter rule file
+          $ihRuleFile = Join-Path -Path $ihModule.ModuleBase -ChildPath "InjectionHunter.psd1"
+          if (-not (Test-Path $ihRuleFile)) {
+              Write-Output "InjectionHunter rule file not found at $ihRuleFile. Skipping security analysis."
+              exit 0
+          }
+          
+          # Run PSScriptAnalyzer with only InjectionHunter custom rules
+          try {
+              $results = Invoke-ScriptAnalyzer -Path "$PWD\ZipFileSplitter.psm1" -Recurse -CustomRulePath $ihRuleFile -Severity Warning, Error -Verbose
+          }
+          catch {
+              Write-Output "Error running InjectionHunter rules: $_"
+              throw "Security analysis failed."
+          }
+          
           if ($results.Count -gt 0) {
               Write-Output "InjectionHunter found potential security issues:"
               $results | Format-Table -AutoSize
               throw "Security analysis failed."
-          } else {
+          }
+          else {
               Write-Output "No security issues found by InjectionHunter."
           }
+
 
       - name: Run Pester Tests with Code Coverage
         shell: pwsh
