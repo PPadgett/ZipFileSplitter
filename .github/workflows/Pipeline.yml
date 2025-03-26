@@ -13,6 +13,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Run Gitleaks Secret Scan
+        uses: zricethezav/gitleaks-action@v2
+        with:
+          args: "--no-git -v"
+
       - name: Install Dependencies and Verify Versions
         shell: pwsh
         run: |
@@ -56,7 +61,6 @@ jobs:
           # Ensure the .dotnet tools folder is in the PATH
           $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
           Write-Output "Dependencies installed."
-
 
       - name: PowerShell Syntax Test
         shell: pwsh
