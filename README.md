@@ -14,7 +14,7 @@
 ## Features
 
 - **Split-ZipFile**: Splits a specified ZIP file into multiple parts of a defined chunk size (default is 15MB).
-- **Merge-ZipParts**: Merges multiple `.zippart` files back into a single ZIP file.
+- **Merge-ZipPart**: Merges multiple `.zippart` files back into a single ZIP file.
 
 ## Installation
 
@@ -51,7 +51,7 @@ Split-ZipFile -InputZip "C:\Path\To\LargeArchive.zip" -OutputFolder "C:\Path\To\
 To merge the split parts back into a single ZIP file:
 
 ```powershell
-Merge-ZipParts -PartsFolder "C:\Path\To\OutputFolder" -OutputZip "C:\Path\To\MergedArchive.zip"
+Merge-ZipPart -PartsFolder "C:\Path\To\OutputFolder" -OutputZip "C:\Path\To\MergedArchive.zip"
 ```
 
 ## Contributing
