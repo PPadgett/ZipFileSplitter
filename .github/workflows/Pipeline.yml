@@ -17,9 +17,9 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Only include the license if your repo belongs to an organization
-          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-          # Try the latest version first
+          # Path to your config file; optional—if not provided, gitleaks uses its defaults.
+          GITLEAKS_CONFIG: ./gitleaks.toml
+          # Specify that you want the latest version; if this fails, you'll fall back.
           GITLEAKS_VERSION: latest
   
       - name: Install Dependencies and Verify Versions
