@@ -19,10 +19,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Only include the license if your repo belongs to an organization
           # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-        with:
-            file: gitleaks.toml
-            version: '8.16.0'  # Use a known working version if 8.16.1 returns 404
-
+          # Try the latest version first
+          GITLEAKS_VERSION: latest
+  
       - name: Install Dependencies and Verify Versions
         shell: pwsh
         run: |
