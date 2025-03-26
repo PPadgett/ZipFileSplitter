@@ -1,4 +1,7 @@
-![PowerShell](https://img.shields.io/badge/PowerShell-Module-blue)  ![Build Status](https://github.com/PPadgett/ZipFileSplitter/actions/workflows/Pipeline.yml/badge.svg?branch=main)
+![PowerShell](https://img.shields.io/badge/PowerShell-Module-blue)  ![Build Status](https://github.com/PPadgett/ZipFileSplitter/actions/workflows/Pipeline.yml/badge.svg?branch=main) ![GitHub release](https://img.shields.io/github/v/release/PPadgett/ZipFileSplitter.svg) ![GitHub issues](https://img.shields.io/github/issues/PPadgett/ZipFileSplitter.svg) ![Codecov](https://img.shields.io/codecov/c/github/PPadgett/ZipFileSplitter.svg)
+
+
+
 
 # ZipFileSplitter PowerShell Module
 
