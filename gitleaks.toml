@@ -1,0 +1,4 @@
+# gitleaks.toml
+title = "Gitleaks Scan Configuration"
+[rules]
+# (Optional) Define your custom rules here. Leave empty to use defaults.
