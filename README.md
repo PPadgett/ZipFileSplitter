@@ -3,11 +3,7 @@
 ![PowerShell](https://img.shields.io/badge/PowerShell-Module-blue)
 ![GitHub issues](https://img.shields.io/github/issues/PPadgett/ZipFileSplitter.svg)
 ![Gitleaks Badge](https://img.shields.io/badge/Protected%20by-Gitleaks-blue?style=flat)
-
-
-
-
-
+![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=PPadgett_ZipFileSplitter&metric=alert_status)
 
 # ZipFileSplitter PowerShell Module
 
