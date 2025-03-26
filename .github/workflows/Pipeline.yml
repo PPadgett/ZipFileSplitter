@@ -89,39 +89,32 @@ jobs:
       - name: Security Testing with InjectionHunter
         shell: pwsh
         run: |
-          Write-Output "Running security analysis with InjectionHunter rules..."
+          Write-Output "Running InjectionHunter security analysis..."
       
           # Check if InjectionHunter module is installed
           $ihModule = Get-Module -ListAvailable -Name InjectionHunter | Sort-Object Version -Descending | Select-Object -First 1
-          if ($null -eq $ihModule) {
-              Write-Output "InjectionHunter module not found. Skipping InjectionHunter security analysis."
+          if (-not $ihModule) {
+              Write-Output "InjectionHunter module not installed. Skipping InjectionHunter analysis."
               exit 0
           }
       
           # Construct the path to the InjectionHunter rule file
-          $ihRuleFile = Join-Path -Path $ihModule.ModuleBase -ChildPath "InjectionHunter.psd1"
+          $ihRuleFile = Join-Path $ihModule.ModuleBase "InjectionHunter.psd1"
           if (-not (Test-Path $ihRuleFile)) {
-              Write-Output "InjectionHunter rule file not found at $ihRuleFile. Skipping security analysis."
+              Write-Output "InjectionHunter rule file not found at $ihRuleFile. Skipping analysis."
               exit 0
           }
-          
-          # Run PSScriptAnalyzer with only InjectionHunter custom rules
-          try {
-              $results = Invoke-ScriptAnalyzer -Path "$PWD\ZipFileSplitter.psm1" -Recurse -CustomRulePath $ihRuleFile -Severity Warning, Error -Verbose
-          }
-          catch {
-              Write-Output "Error running InjectionHunter rules: $_"
-              throw "Security analysis failed."
-          }
-          
+      
+          # Run PSScriptAnalyzer using the InjectionHunter custom rules
+          $results = Invoke-ScriptAnalyzer -Path "$PWD\ZipFileSplitter.psm1" -Recurse -CustomRulePath $ihRuleFile -Severity Warning,Error
+      
+          Write-Output "InjectionHunter analysis results (Total issues found: $($results.Count)):"
+          $results | Format-Table -AutoSize
+      
           if ($results.Count -gt 0) {
-              Write-Output "InjectionHunter found potential security issues:"
-              $results | Format-Table -AutoSize
               throw "Security analysis failed."
           }
-          else {
-              Write-Output "No security issues found by InjectionHunter."
-          }
+
 
 
       - name: Run Pester Tests with Code Coverage
